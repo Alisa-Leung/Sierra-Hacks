@@ -8,6 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     toggleCameraBtn.addEventListener("click", async () => {
         if (!cameraActive){
             try{
+                console.log("Requesting camera access...");
                 stream = await navigator.mediaDevices.getUserMedia({
                     video:{
                         width:{ideal:280},
@@ -18,11 +19,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 videoElement = document.createElement("video");
                 videoElement.autoplay = true;
                 videoElement.playsinline = true;
+                videoElement.muted = true;
                 videoElement.style.width = "280px";
                 videoElement.style.height = "210px";
                 videoElement.style.borderRadius = "8px";
                 videoElement.style.border = "2px solid #7AB68C";
                 videoElement.srcObject = stream;
+                videoElement.onloadedmetadata = () => {
+                    videoElement.play().catch(err => {
+                        console.error("Error playing video:", err);
+                    });
+                };
                 videoContainer.appendChild(videoElement);
                 toggleCameraBtn.textContent = "Stop Camera";
                 cameraActive = true;
@@ -31,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Could not access camera. Please check permissions.")
             }
         } else{
+            console.log("Stopping camera...")
             if (stream){
                 stream.getTracks().forEach(track => track.stop());
             }
@@ -38,8 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 videoElement.remove();
                 videoElement = null;
             }
-            toggleCameraBtn.textContext = "Start Camera";
+            toggleCameraBtn.textContent = "Start Camera";
             cameraActive = false;
+            stream = null;
         }
     });
     //this code adds content to the html file based on content

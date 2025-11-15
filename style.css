@@ -112,13 +112,21 @@ input:checked + .slider:before{
 #videoContainer{
     margin-bottom: var(--medium);
     text-align: center;
+    margin-top: var(--small);
+    margin-bottom: var(--small);
+    margin-left: var(--small);
+    margin-right: var(--small);
+}
+#videoContainer video{
+    transform: scaleX(-1);
+    border: none!important;
 }
 #cameraVideo{
     width: 100%;
     max-width: 280px;
     height: auto;
     border-radius: var(--small);
-    border: 2px solid var(--mid-green);
+    border: none;
     display: none;
     margin-bottom: var(--small);
 }
