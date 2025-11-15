@@ -27,7 +27,6 @@ html{
     background-color: var(--off-white);
     text-align: center;
     padding: var(--small);
-    justify-content:center;
 }
 h1{
     font-family: var(--lexend);
@@ -107,4 +106,35 @@ input:checked + .slider:before{
 }
 .slider.round:before{
     border-radius: 50%;
+}
+
+/*video*/
+#videoContainer{
+    margin-bottom: var(--medium);
+    text-align: center;
+}
+#cameraVideo{
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    border-radius: var(--small);
+    border: 2px solid var(--mid-green);
+    display: none;
+    margin-bottom: var(--small);
+}
+#toggleCamera{
+    font-family: var(--lexend);
+    background-color: var(--mid-green);
+    color: white;
+    border: none;
+    padding: var(--small) var(--medium);
+    border-radius: var(--xsmall);
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+#toggleCamera:hover{
+    background-color: var(--dark-green);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
