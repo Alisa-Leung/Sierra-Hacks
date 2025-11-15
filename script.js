@@ -1,17 +1,29 @@
 document.addEventListener("DOMContentLoaded", () => {
     //camera stuff
+    const videoContainer = document.getElementById("videoContainer");
     const toggleCameraBtn = document.getElementById("toggleCamera");
+    let stream = null;
     let cameraActive = false;
-    Webcam.set ({
-        width : 280,
-        height: 210,
-        image_format: 'jpeg',
-        jpeg_quality: 90
-    });
+    let videoElement = null;
     toggleCameraBtn.addEventListener("click", async () => {
         if (!cameraActive){
             try{
-                Webcam.attach("#videoContainer");
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video:{
+                        width:{ideal:280},
+                        height:{ideal: 210}
+                    },
+                    audio: false
+                });
+                videoElement = document.createElement("video");
+                videoElement.autoplay = true;
+                videoElement.playsinline = true;
+                videoElement.style.width = "280px";
+                videoElement.style.height = "210px";
+                videoElement.style.borderRadius = "8px";
+                videoElement.style.border = "2px solid #7AB68C";
+                videoElement.srcObject = stream;
+                videoContainer.appendChild(videoElement);
                 toggleCameraBtn.textContent = "Stop Camera";
                 cameraActive = true;
             } catch (err){
@@ -19,17 +31,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 alert("Could not access camera. Please check permissions.")
             }
         } else{
-            Webcam.reset();
+            if (stream){
+                stream.getTracks().forEach(track => track.stop());
+            }
+            if (videoElement){
+                videoElement.remove();
+                videoElement = null;
+            }
             toggleCameraBtn.textContext = "Start Camera";
             cameraActive = false;
         }
-    })
+    });
     //this code adds content to the html file based on content
     const modeDropdown = document.getElementById("modeDropdown");
     const modeDiv = document.getElementById("modeDiv");
-    
-    const camera = document.getElementById("videoContainer");
-    Webcam.attach('#videoContainer');
     //creates on/off switch element
     modeDropdown.addEventListener("change", (event) => {
         const existingContent = document.getElementById("divContent");
