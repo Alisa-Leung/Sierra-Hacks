@@ -17,10 +17,16 @@
     --xxlarge: 40px;
     --xxxlarge: 90px;
 }
+*{
+    padding: 0;
+    margin: 0;
+}
 html{
     width: 300px;
     height: 400px;
     background-color: var(--off-white);
+    text-align: center;
+    padding: var(--small);
 }
 
 /*id selectors*/
@@ -30,7 +36,9 @@ html{
     text-align: center;
     padding: var(--small);
     cursor: pointer;
+    transition: all 0.3s ease;
     border-radius: var(--xsmall);
+    width: 300px;
 }
 
 /*switch styles*/
