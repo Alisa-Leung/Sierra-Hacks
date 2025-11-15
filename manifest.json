@@ -1,0 +1,10 @@
+{
+  "name": "Placeholder",
+  "description": "A communication tool, connecting people with communication differences",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": ""
+  }
+}
