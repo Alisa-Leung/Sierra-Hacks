@@ -29,7 +29,7 @@ html{
     padding: var(--small);
 }
 
-/*id selectors*/
+/*dropdown*/
 #modeDropdown{
     font-family: var(--lexend);
     border: none;
@@ -39,6 +39,19 @@ html{
     transition: all 0.3s ease;
     border-radius: var(--xsmall);
     width: 300px;
+    background-color: var(--mid-green);
+    color: var(--text-green);
+}
+#modeDropdown:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba (0, 0, 0, 0.15);
+    background-color: var(--dark-green);
+    color: var(--off-white);
+}
+#divContent{
+    font-weight: bold;
+    color: var(--text-green);
+    margin-bottom: var(--small);
 }
 
 /*switch styles*/

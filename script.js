@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
         modeDiv.appendChild(divContent);
-    })    
-})
+    })
+});
 
 function createSwitch(){
     const onOffSwitch = document.createElement("label");

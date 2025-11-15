@@ -7,7 +7,12 @@
     "default_popup": "index.html",
     "default_icon": "images/icon.png"
   },
-  "permissions": {
+  "permissions": [
     "tts"
-  }
+  ],
+  "content_scripts":[
+    {
+        "matches": ["https://www.meet.google.com/*"]
+    }
+  ]
 }
