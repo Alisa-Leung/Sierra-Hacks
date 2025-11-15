@@ -1,3 +1,13 @@
 :root{
+    --text-green: #021b09;
+    --dark-green: #17572a;
     --mid-green: #7AB68C;
+    --off-white: #DCEBE1;
+
+    /*fonts*/
+}
+html{
+    width: 300px;
+    height: 400px;
+    background-color: var(--off-white);
 }
