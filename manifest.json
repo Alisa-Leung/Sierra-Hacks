@@ -8,18 +8,5 @@
     "default_icon": "images/icon.png"
   },
   "permissions": [
-    "activeTab",
-    "storage",
-    "scripting"
-  ],
-  "content_scripts":[
-    {
-        "matches": ["https://www.meet.google.com/*"],
-        "js": ["content.js"],
-        "run_at": "document_idle"
-    }
-  ],
-  "background": {
-    "service_worker": "background.js"
-  }
+  ]
 }
