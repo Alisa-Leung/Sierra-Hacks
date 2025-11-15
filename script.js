@@ -8,18 +8,22 @@ document.addEventListener("DOMContentLoaded", () => {
         if (existingContent){
             existingContent.remove();
         }
+        const existingSwitch = document.getElementById("toggleSwitch");
+        if (existingSwitch){
+            existingSwitch.remove();
+        }
         const divContent = document.createElement("p");
         if (event.target.value){
             divContent.id = "divContent";
             if (event.target.value === "visuallyImpaired"){
                 divContent.innerHTML = "Visually Impaired";
-                createSwitch
+                createSwitch();
             } else if (event.target.value === "hardOfHearing"){
                 divContent.innerHTML = "Hard of Hearing";
-                createSwitch
+                createSwitch();
             } else if (event.target.value === "speakingDifficulty"){
                 divContent.innerHTML = "Speaking Difficulty";
-                createSwitch
+                createSwitch();
             }
         }
         modeDiv.appendChild(divContent);
@@ -28,10 +32,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function createSwitch(){
     const onOffSwitch = document.createElement("label");
-    onOffSwitch.class = "switch";
-    onOffSwitch.appendChild("input");
-    onOffSwitch.firstChild.type = "checkbox";
-    onOffSwitch.appendChild("span");
-    onOffSwitch.lastChild.class = "slider round";
+    onOffSwitch.className = "switch";
+    onOffSwitch.id = "toggleSwitch";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    const span = document.createElement("span");
+    span.className = "slider round";
+    onOffSwitch.appendChild(input);
+    onOffSwitch.appendChild(span);
     modeDiv.appendChild(onOffSwitch);
 }
