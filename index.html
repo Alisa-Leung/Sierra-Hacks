@@ -1,36 +1,23 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <link href="style.css" rel="stylesheet">
-        <script src="script.js"></script>
-    </head>
-    <body>
-        <select name="Communication Mode" id="modeDropdown">
-            <option value="">[Select a Communication Mode]</option>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Accessibility Modes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Select Accessibility Mode</h2>
+        <select id="modeDropdown">
+            <option value="">--Choose Mode--</option>
             <option value="visuallyImpaired">Visually Impaired</option>
             <option value="hardOfHearing">Hard of Hearing</option>
             <option value="speakingDifficulty">Speaking Difficulty</option>
         </select>
-        <div id="modeDiv">
-        </div>
-        <button type="button" id="mic-btn"><i class="fa-solid fa-microphone"></i></button>
-        <p id="text"> </p>
-    </body>
-</html>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Speech-to-Text</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <div class="container">
-    <button id="micBtn">🎤</button>
-    <p id="textLabel">Your speech will appear here...</p>
-  </div>
+        <div id="modeDiv"></div>
+    </div>
 
-  <script src="popup.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
