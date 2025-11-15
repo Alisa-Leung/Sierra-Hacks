@@ -27,6 +27,12 @@ html{
     background-color: var(--off-white);
     text-align: center;
     padding: var(--small);
+    justify-content:center;
+}
+h1{
+    font-family: var(--lexend);
+    color: var(--text-green);
+    margin-bottom: var(--small);
 }
 
 /*dropdown*/
@@ -38,7 +44,7 @@ html{
     cursor: pointer;
     transition: all 0.3s ease;
     border-radius: var(--xsmall);
-    width: 300px;
+    width: calc(var(--xxxlarge)*3);
     background-color: var(--mid-green);
     color: var(--text-green);
 }
