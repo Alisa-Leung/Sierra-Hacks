@@ -13,10 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
             divContent.id = "divContent";
             if (event.target.value === "visuallyImpaired"){
                 divContent.innerHTML = "Visually Impaired";
+                createSwitch
             } else if (event.target.value === "hardOfHearing"){
                 divContent.innerHTML = "Hard of Hearing";
+                createSwitch
             } else if (event.target.value === "speakingDifficulty"){
                 divContent.innerHTML = "Speaking Difficulty";
+                createSwitch
             }
         }
         modeDiv.appendChild(divContent);
