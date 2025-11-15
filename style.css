@@ -7,18 +7,23 @@
 
     /*fonts*/
     --lexend: "Lexend";
+
+    /*sizing*/
+    --small: 8px;
+    --medium: 16px;
+    --large: 20px;
+    --xlarge: 30px;
+    --xxlarge: 40px;
+    --xxxlarge: 90px;
 }
 html{
     width: 300px;
     height: 400px;
     background-color: var(--off-white);
-    font-family: var(--lexend);
-}
-body{
-    font-family: var(--lexend);
 }
 
 /*id selectors*/
 #modeDropdown{
     font-family: var(--lexend);
+    border: none;
 }
