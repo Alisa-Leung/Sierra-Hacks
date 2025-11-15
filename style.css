@@ -26,4 +26,7 @@ html{
 #modeDropdown{
     font-family: var(--lexend);
     border: none;
+    text-align: center;
+    padding: var(--small);
+    cursor: pointer;
 }
