@@ -5,142 +5,156 @@ document.addEventListener("DOMContentLoaded", () => {
     let stream = null;
     let cameraActive = false;
     let videoElement = null;
-    const detectionResult = document.getElementById("detectionResult");
-    let handDetector = null;
     let isDetecting = false;
     let animationId = null;
     
-    async function loadHandDetector() {
-        try {
-            console.log("Loading hand detector...");
-            detectionResult.textContent = "Loading hand detector...";
+    // Detect hand using skin color
+    function detectHand(ctx, width, height) {
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+        let skinPixels = [];
+        
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
             
-            if (typeof handpose === 'undefined') {
-                throw new Error("HandPose library not loaded");
+            // Skin color detection
+            if (r > 95 && g > 40 && b > 20 &&
+                r > g && r > b &&
+                Math.abs(r - g) > 15 &&
+                r - b > 15) {
+                const x = (i / 4) % width;
+                const y = Math.floor((i / 4) / width);
+                skinPixels.push({ x, y });
             }
-            
-            handDetector = await handpose.load();
-            console.log("Hand detector loaded!");
-            detectionResult.textContent = "Hand detector ready!";
-            return true;
-        } catch (err) {
-            console.error("Error loading hand detector:", err);
-            detectionResult.textContent = "Error: " + err.message;
-            return false;
         }
+        
+        return skinPixels;
     }
     
-    // Draw hand landmarks on canvas
-    function drawHandLandmarks(predictions, canvas, ctx) {
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Draw hand visualization
+    function drawHand(skinPixels, ctx, width, height) {
+        if (skinPixels.length < 100) return null;
         
-        if (predictions.length === 0) return;
+        // Find boundaries
+        let minX = width, maxX = 0, minY = height, maxY = 0;
+        let sumX = 0, sumY = 0;
         
-        predictions.forEach(prediction => {
-            const landmarks = prediction.landmarks;
-            
-            // Draw connections between joints
-            const connections = [
-                [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
-                [0, 5], [5, 6], [6, 7], [7, 8], // Index
-                [0, 9], [9, 10], [10, 11], [11, 12], // Middle
-                [0, 13], [13, 14], [14, 15], [15, 16], // Ring
-                [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
-                [5, 9], [9, 13], [13, 17] // Palm connections
-            ];
-            
-            // Draw lines
-            ctx.strokeStyle = "#7AB68C";
-            ctx.lineWidth = 2;
-            connections.forEach(([start, end]) => {
-                ctx.beginPath();
-                ctx.moveTo(landmarks[start][0], landmarks[start][1]);
-                ctx.lineTo(landmarks[end][0], landmarks[end][1]);
-                ctx.stroke();
-            });
-            
-            // Draw joints
-            landmarks.forEach((landmark, i) => {
-                ctx.beginPath();
-                ctx.arc(landmark[0], landmark[1], 4, 0, 2 * Math.PI);
-                ctx.fillStyle = i === 0 ? "#17572a" : "#7AB68C"; // Wrist is darker
-                ctx.fill();
-                ctx.strokeStyle = "#021b09";
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            });
+        skinPixels.forEach(p => {
+            minX = Math.min(minX, p.x);
+            maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y);
+            maxY = Math.max(maxY, p.y);
+            sumX += p.x;
+            sumY += p.y;
         });
+        
+        const centerX = sumX / skinPixels.length;
+        const centerY = sumY / skinPixels.length;
+        const handWidth = maxX - minX;
+        const handHeight = maxY - minY;
+        
+        // Draw bounding box
+        ctx.strokeStyle = "#7AB68C";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(minX, minY, handWidth, handHeight);
+        
+        // Draw center point
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
+        ctx.fillStyle = "#17572a";
+        ctx.fill();
+        ctx.strokeStyle = "#7AB68C";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // Draw corner markers
+        const markerSize = 15;
+        ctx.strokeStyle = "#17572a";
+        ctx.lineWidth = 3;
+        
+        // Top-left
+        ctx.beginPath();
+        ctx.moveTo(minX, minY + markerSize);
+        ctx.lineTo(minX, minY);
+        ctx.lineTo(minX + markerSize, minY);
+        ctx.stroke();
+        
+        // Top-right
+        ctx.beginPath();
+        ctx.moveTo(maxX - markerSize, minY);
+        ctx.lineTo(maxX, minY);
+        ctx.lineTo(maxX, minY + markerSize);
+        ctx.stroke();
+        
+        // Bottom-left
+        ctx.beginPath();
+        ctx.moveTo(minX, maxY - markerSize);
+        ctx.lineTo(minX, maxY);
+        ctx.lineTo(minX + markerSize, maxY);
+        ctx.stroke();
+        
+        // Bottom-right
+        ctx.beginPath();
+        ctx.moveTo(maxX - markerSize, maxY);
+        ctx.lineTo(maxX, maxY);
+        ctx.lineTo(maxX, maxY - markerSize);
+        ctx.stroke();
+        
+        return {
+            width: handWidth,
+            height: handHeight,
+            pixelCount: skinPixels.length
+        };
     }
     
-    // Classify gesture based on hand landmarks
-    function classifyGesture(landmarks) {
-        if (!landmarks || landmarks.length === 0) {
-            return null;
+    // Classify basic gestures
+    function classifyGesture(handInfo) {
+        if (!handInfo) return null;
+        
+        const aspectRatio = handInfo.width / handInfo.height;
+        const size = Math.sqrt(handInfo.width * handInfo.width + handInfo.height * handInfo.height);
+        
+        if (size < 60) {
+            return { letter: "A", description: "Closed fist" };
+        } else if (aspectRatio > 1.4) {
+            return { letter: "B", description: "Open hand (wide)" };
+        } else if (aspectRatio < 0.6) {
+            return { letter: "D", description: "Pointing gesture" };
+        } else if (size > 120) {
+            return { letter: "B", description: "Open hand (large)" };
+        } else {
+            return { letter: "Hand", description: "Hand detected" };
         }
-        
-        const hand = landmarks[0];
-        
-        // Key landmark indices
-        const thumbTip = hand[4];
-        const indexTip = hand[8];
-        const middleTip = hand[12];
-        const ringTip = hand[16];
-        const pinkyTip = hand[20];
-        const wrist = hand[0];
-        const indexBase = hand[5];
-        const middleBase = hand[9];
-        
-        // Calculate if fingers are extended
-        const thumbUp = thumbTip[1] < wrist[1] - 30;
-        const indexUp = indexTip[1] < indexBase[1];
-        const middleUp = middleTip[1] < middleBase[1];
-        const ringUp = ringTip[1] < wrist[1];
-        const pinkyUp = pinkyTip[1] < wrist[1];
-        
-        // Count extended fingers
-        const extendedCount = [indexUp, middleUp, ringUp, pinkyUp].filter(Boolean).length;
-        
-        // Simple gesture classification
-        if (extendedCount === 0 && !thumbUp) {
-            return { letter: "A", confidence: 0.7, description: "Fist (A)" };
-        } else if (indexUp && !middleUp && !ringUp && !pinkyUp) {
-            return { letter: "D", confidence: 0.65, description: "Pointing up (D/1)" };
-        } else if (indexUp && middleUp && !ringUp && !pinkyUp) {
-            return { letter: "V", confidence: 0.6, description: "Peace sign (V/2)" };
-        } else if (extendedCount === 4) {
-            return { letter: "B", confidence: 0.5, description: "Open hand (B)" };
-        } else if (thumbUp && !indexUp && !middleUp) {
-            return { letter: "E", confidence: 0.55, description: "Thumb up (E)" };
-        }
-        
-        return { letter: "?", confidence: 0.3, description: "Unknown gesture" };
     }
     
-    // Detect hands continuously
-    async function detectHands() {
-        if (!isDetecting || !videoElement || !handDetector) return;
+    // Main detection loop
+    async function detectLoop() {
+        if (!isDetecting || !videoElement) return;
         
         try {
-            const predictions = await handDetector.estimateHands(videoElement);
-            
-            // Draw landmarks on canvas
             const canvas = document.getElementById("outputCanvas");
             const ctx = canvas.getContext("2d");
-            drawHandLandmarks(predictions, canvas, ctx);
             
-            if (predictions.length > 0) {
-                const gesture = classifyGesture(predictions);
-                if (gesture && gesture.confidence > 0.4) {
-                    detectionResult.textContent = `${gesture.letter} - ${gesture.description}`;
-                    detectionResult.style.color = "#17572a";
-                    detectionResult.style.fontWeight = "bold";
-                } else {
-                    detectionResult.textContent = "Hand detected - hold steady";
-                    detectionResult.style.color = "#666";
-                }
+            // Draw video frame
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            
+            // Detect hand
+            const skinPixels = detectHand(ctx, canvas.width, canvas.height);
+            
+            // Clear and redraw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const handInfo = drawHand(skinPixels, ctx, canvas.width, canvas.height);
+            
+            // Show result
+            if (handInfo) {
+                const gesture = classifyGesture(handInfo);
+                detectionResult.textContent = `${gesture.letter} - ${gesture.description}`;
+                detectionResult.style.color = "#17572a";
+                detectionResult.style.fontWeight = "bold";
             } else {
-                detectionResult.textContent = "No hand detected";
+                detectionResult.textContent = "No hand detected - show your palm";
                 detectionResult.style.color = "#999";
                 detectionResult.style.fontWeight = "normal";
             }
@@ -149,21 +163,18 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Detection error:", err);
         }
         
-        // Continue loop
         if (isDetecting) {
-            animationId = requestAnimationFrame(detectHands);
+            animationId = requestAnimationFrame(detectLoop);
         }
     }
     
-    // Start detection
     function startDetection() {
-        if (isDetecting || !handDetector) return;
+        if (isDetecting) return;
         isDetecting = true;
-        console.log("Starting hand detection...");
-        detectHands();
+        detectionResult.textContent = "Starting detection...";
+        detectLoop();
     }
     
-    // Stop detection
     function stopDetection() {
         isDetecting = false;
         if (animationId) {
@@ -171,18 +182,14 @@ document.addEventListener("DOMContentLoaded", () => {
             animationId = null;
         }
         detectionResult.textContent = "";
-        console.log("Stopped hand detection");
     }
     
     toggleCameraBtn.addEventListener("click", async () => {
-        if (!cameraActive){
-            try{
+        if (!cameraActive) {
+            try {
                 console.log("Requesting camera access...");
                 stream = await navigator.mediaDevices.getUserMedia({
-                    video:{
-                        width:{ideal:280},
-                        height:{ideal: 210}
-                    },
+                    video: { width: { ideal: 280 }, height: { ideal: 210 } },
                     audio: false
                 });
                 
@@ -195,47 +202,35 @@ document.addEventListener("DOMContentLoaded", () => {
                 videoElement.srcObject = stream;
                 
                 videoElement.onloadedmetadata = async () => {
-                    await videoElement.play().catch(err => {
-                        console.error("Error playing video:", err);
-                    });
+                    await videoElement.play();
                     
-                    // Setup canvas overlay
                     const canvas = document.getElementById("outputCanvas");
                     canvas.width = 280;
                     canvas.height = 210;
-                    canvas.style.display = "block";
+                    canvas.classList.add('active');
                     
-                    // Load hand detector if not loaded
-                    if (!handDetector) {
-                        await loadHandDetector();
-                    }
-                    
-                    // Start detection after 1.5 seconds
-                    if (handDetector) {
-                        setTimeout(() => startDetection(), 1500);
-                    }
+                    setTimeout(() => startDetection(), 500);
                 };
                 
                 videoContainer.appendChild(videoElement);
                 toggleCameraBtn.textContent = "Stop Camera";
                 cameraActive = true;
                 
-            } catch (err){
-                console.error("Error accessing camera:", err);
-                alert("Could not access camera. Please check permissions.")
+            } catch (err) {
+                console.error("Camera error:", err);
+                alert("Camera error: " + err.message);
             }
-        } else{
-            console.log("Stopping camera...")
+        } else {
+            console.log("Stopping camera...");
             stopDetection();
             
-            // Hide canvas
             const canvas = document.getElementById("outputCanvas");
-            canvas.style.display = "none";
+            canvas.classList.remove('active');
             
-            if (stream){
+            if (stream) {
                 stream.getTracks().forEach(track => track.stop());
             }
-            if (videoElement){
+            if (videoElement) {
                 videoElement.remove();
                 videoElement = null;
             }
