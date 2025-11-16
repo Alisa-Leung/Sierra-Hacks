@@ -1,23 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Accessibility Modes</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <h2>Select Accessibility Mode</h2>
-        <select id="modeDropdown">
-            <option value="">--Choose Mode--</option>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link href="style.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend">
+    </head>
+    <body>
+        <h1>Select a Communication Mode</h1>
+        <select name="Communication Mode" id="modeDropdown">
+            <option value=""></option>
             <option value="visuallyImpaired">Visually Impaired</option>
             <option value="hardOfHearing">Hard of Hearing</option>
             <option value="speakingDifficulty">Speaking Difficulty</option>
         </select>
-
         <div id="modeDiv"></div>
-    </div>
+        <div id="videoContainer"></div>
+        <button id="toggleCamera">Start Camera</button>
 
-    <script src="script.js"></script>
-</body>
+        <canvas id="outputCanvas"></canvas>
+        <div id="detectionResult"></div>
+        <script src="script.js"></script>
+    </body>
 </html>

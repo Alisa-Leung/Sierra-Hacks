@@ -1,28 +1,184 @@
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 90vh;
-    background: #f0f0f0;
-}
+:root{
+    /*colors*/
+    --text-green: #021b09;
+    --dark-green: #17572a;
+    --mid-green: #7AB68C;
+    --off-white: #DCEBE1;
 
-.container {
+    /*fonts*/
+    --lexend: "Lexend";
+
+    /*sizing*/
+    --xsmall: 4px;
+    --small: 8px;
+    --medium: 16px;
+    --large: 20px;
+    --xlarge: 30px;
+    --xxlarge: 40px;
+    --xxxlarge: 90px;
+}
+*{
+    padding: 0;
+    margin: 0;
+}
+html{
+    width: 300px;
+    height: 400px;
+    background-color: var(--off-white);
     text-align: center;
-    background: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0px 5px 20px rgba(0,0,0,0.1);
+    padding: var(--small);
+}
+h1{
+    font-family: var(--lexend);
+    color: var(--text-green);
+    margin-bottom: var(--small);
 }
 
-#modeDropdown {
-    padding: 10px;
-    font-size: 1rem;
-    margin-top: 15px;
+/*dropdown*/
+#modeDropdown{
+    font-family: var(--lexend);
+    border: none;
+    text-align: center;
+    padding: var(--small);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: var(--xsmall);
+    width: calc(var(--xxxlarge)*3);
+    background-color: var(--mid-green);
+    color: var(--text-green);
+}
+#modeDropdown:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba (0, 0, 0, 0.15);
+    background-color: var(--dark-green);
+    color: var(--off-white);
+}
+#divContent{
+    font-weight: bold;
+    color: var(--text-green);
+    margin-bottom: var(--small);
 }
 
-#modeDiv {
-    margin-top: 20px;
-    font-size: 1.2rem;
-    color: #333;
+/*switch styles*/
+.switch{
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+.switch input{
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider{
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+}
+.slider:before{
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+}
+input:checked + .slider{
+    background-color: var(--mid-green);
+}
+input:focus + .slider{
+    box-shadow: 0 0 1px var(--mid-green);
+}
+input:checked + .slider:before{
+    transform: translateX(26px);
+}
+/*rounded sliders*/
+.slider.round{
+    border-radius: 34px;
+}
+.slider.round:before{
+    border-radius: 50%;
+}
+
+/*video*/
+#videoContainer{
+    margin-bottom: var(--medium);
+    text-align: center;
+    margin-top: var(--small);
+    margin-bottom: var(--small);
+    margin-left: var(--small);
+    margin-right: var(--small);
+    position: relative;
+    display: inline-block;
+}
+#videoContainer video {
+    transform: scaleX(-1);
+    border: none !important;
+    display: block;
+    width: 280px;
+    height: 210px;
+    border-radius: var(--small);
+}
+#cameraVideo{
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    border-radius: var(--small);
+    border: none;
+    display: none;
+    margin-bottom: var(--small);
+}
+#toggleCamera {
+    font-family: var(--lexend);
+    background-color: var(--mid-green);
+    color: var(--text-green);
+    border: none;
+    padding: var(--small) var(--medium);
+    border-radius: var(--xsmall);
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    margin-top: var(--small);
+}
+#toggleCamera:hover {
+    background-color: var(--dark-green);
+    color: var(--off-white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/*asl detector*/
+#detectionResult {
+    font-family: var(--lexend);
+    color: var(--text-green);
+    font-weight: normal;
+    margin: var(--small) 0;
+    margin-top: var(--medium); /* Add space after button */
+    min-height: 25px;
+    font-size: 14px;
+    padding: var(--small);
+    background-color: rgba(122, 182, 140, 0.15);
+    border-radius: var(--xsmall);
+}
+#outputCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 210px;
+    transform: scaleX(-1);
+    pointer-events: none;
+    border-radius: var(--small);
+    display: none;
+}
+#outputCanvas.active {
+    display: block;
 }
