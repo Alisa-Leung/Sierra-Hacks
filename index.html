@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
         <link href="style.css" rel="stylesheet">
-        <script src="script.js"></script>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend">
+        <script src="libraries/tf.min.js"></script>
+        <script src="libraries/handpose.min.js"></script>
     </head>
     <body>
         <h1>Select a Communication Mode</h1>
@@ -16,5 +18,8 @@
         <div id="modeDiv"></div>
         <div id="videoContainer"></div>
         <button id="toggleCamera">Start Camera</button>
+        <div id="detectionResult"></div>
+        <canvas id="outputCanvas"></canvas>
+        <script src="script.js"></script>
     </body>
 </html>

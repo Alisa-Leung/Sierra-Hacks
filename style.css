@@ -116,10 +116,16 @@ input:checked + .slider:before{
     margin-bottom: var(--small);
     margin-left: var(--small);
     margin-right: var(--small);
+    position: relative;
+    display: inline-block;
 }
-#videoContainer video{
+#videoContainer video {
     transform: scaleX(-1);
-    border: none!important;
+    border: none !important;
+    display: block;
+    width: 280px;
+    height: 210px;
+    border-radius: var(--small);
 }
 #cameraVideo{
     width: 100%;
@@ -130,19 +136,48 @@ input:checked + .slider:before{
     display: none;
     margin-bottom: var(--small);
 }
-#toggleCamera{
+#toggleCamera {
     font-family: var(--lexend);
     background-color: var(--mid-green);
-    color: white;
+    color: var(--text-green);
     border: none;
     padding: var(--small) var(--medium);
     border-radius: var(--xsmall);
     cursor: pointer;
     font-weight: bold;
     transition: all 0.3s ease;
+    margin-top: var(--small);
 }
-#toggleCamera:hover{
+#toggleCamera:hover {
     background-color: var(--dark-green);
+    color: var(--off-white);
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/*asl detector*/
+#detectionResult {
+    font-family: var(--lexend);
+    color: var(--text-green);
+    font-weight: normal;
+    margin: var(--small) 0;
+    min-height: 25px;
+    font-size: 14px;
+    padding: var(--small);
+    background-color: rgba(122, 182, 140, 0.15);
+    border-radius: var(--xsmall);
+}
+#outputCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 210px;
+    transform: scaleX(-1);
+    pointer-events: none;
+    border-radius: var(--small);
+    display: none;
+}
+#outputCanvas.active {
+    display: block;
 }
