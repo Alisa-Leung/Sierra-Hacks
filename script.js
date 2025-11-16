@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let videoElement = null;
     let isDetecting = false;
     let animationId = null;
+    let lastGesture = null;
+    let gestureStartTime = 0;
     
     // Detect hand using skin color
     function detectHand(ctx, width, height) {
@@ -33,6 +35,69 @@ document.addEventListener("DOMContentLoaded", () => {
         return skinPixels;
     }
     
+    // Find convex hull points (fingertips)
+    function findConvexityDefects(skinPixels) {
+        if (skinPixels.length < 100) return [];
+        
+        // Find the topmost points (potential fingertips)
+        let topPoints = [];
+        const gridSize = 20;
+        const grid = {};
+        
+        // Divide into grid and find highest point in each cell
+        skinPixels.forEach(p => {
+            const key = `${Math.floor(p.x / gridSize)}_${Math.floor(p.y / gridSize)}`;
+            if (!grid[key] || p.y < grid[key].y) {
+                grid[key] = p;
+            }
+        });
+        
+        // Get all high points
+        Object.values(grid).forEach(p => {
+            topPoints.push(p);
+        });
+        
+        // Sort by y coordinate (top to bottom)
+        topPoints.sort((a, b) => a.y - b.y);
+        
+        // Keep only the top 30% of points
+        const topThreshold = topPoints[Math.floor(topPoints.length * 0.3)]?.y || 0;
+        topPoints = topPoints.filter(p => p.y <= topThreshold + 30);
+        
+        return topPoints;
+    }
+    
+    // Count extended fingers based on top points
+    function countFingers(topPoints, handWidth) {
+        if (topPoints.length < 2) return 0;
+        
+        // Cluster nearby points
+        const clusters = [];
+        const minDistance = handWidth * 0.15; // Minimum distance between fingers
+        
+        topPoints.forEach(point => {
+            let addedToCluster = false;
+            
+            for (let cluster of clusters) {
+                const avgX = cluster.reduce((sum, p) => sum + p.x, 0) / cluster.length;
+                const avgY = cluster.reduce((sum, p) => sum + p.y, 0) / cluster.length;
+                const dist = Math.sqrt((point.x - avgX) ** 2 + (point.y - avgY) ** 2);
+                
+                if (dist < minDistance) {
+                    cluster.push(point);
+                    addedToCluster = true;
+                    break;
+                }
+            }
+            
+            if (!addedToCluster) {
+                clusters.push([point]);
+            }
+        });
+        
+        return Math.min(clusters.length, 5); // Max 5 fingers
+    }
+    
     // Draw hand visualization
     function drawHand(skinPixels, ctx, width, height) {
         if (skinPixels.length < 100) return null;
@@ -55,6 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const handWidth = maxX - minX;
         const handHeight = maxY - minY;
         
+        // Find fingertips
+        const topPoints = findConvexityDefects(skinPixels);
+        const fingerCount = countFingers(topPoints, handWidth);
+        
         // Draw bounding box
         ctx.strokeStyle = "#7AB68C";
         ctx.lineWidth = 3;
@@ -62,17 +131,25 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Draw center point
         ctx.beginPath();
-        ctx.arc(centerX, centerY, 10, 0, 2 * Math.PI);
+        ctx.arc(centerX, centerY, 8, 0, 2 * Math.PI);
         ctx.fillStyle = "#17572a";
         ctx.fill();
         ctx.strokeStyle = "#7AB68C";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.stroke();
         
+        // Draw fingertip markers
+        topPoints.forEach(point => {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = "#FF6B6B";
+            ctx.fill();
+        });
+        
         // Draw corner markers
-        const markerSize = 15;
+        const markerSize = 12;
         ctx.strokeStyle = "#17572a";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         
         // Top-left
         ctx.beginPath();
@@ -105,27 +182,60 @@ document.addEventListener("DOMContentLoaded", () => {
         return {
             width: handWidth,
             height: handHeight,
-            pixelCount: skinPixels.length
+            pixelCount: skinPixels.length,
+            centerX: centerX,
+            centerY: centerY,
+            fingerCount: fingerCount
         };
     }
     
-    // Classify basic gestures
+    // Classify gestures based on finger count and shape
     function classifyGesture(handInfo) {
         if (!handInfo) return null;
         
         const aspectRatio = handInfo.width / handInfo.height;
         const size = Math.sqrt(handInfo.width * handInfo.width + handInfo.height * handInfo.height);
+        const density = handInfo.pixelCount / (handInfo.width * handInfo.height);
+        const fingers = handInfo.fingerCount;
         
-        if (size < 60) {
-            return { letter: "A", description: "Closed fist" };
-        } else if (aspectRatio > 1.4) {
-            return { letter: "B", description: "Open hand (wide)" };
-        } else if (aspectRatio < 0.6) {
-            return { letter: "D", description: "Pointing gesture" };
-        } else if (size > 120) {
-            return { letter: "B", description: "Open hand (large)" };
+        console.log(`Fingers: ${fingers}, Size: ${size.toFixed(0)}, Aspect: ${aspectRatio.toFixed(2)}, Density: ${density.toFixed(2)}`);
+        
+        // Classify based on finger count first
+        if (fingers === 0 && size < 80) {
+            return { letter: "A", description: "Fist (0 fingers)" };
+        } else if (fingers === 0 && size >= 80) {
+            return { letter: "S", description: "Closed hand (0 fingers)" };
+        } else if (fingers === 1) {
+            if (aspectRatio < 0.7) {
+                return { letter: "D", description: "1 finger pointing" };
+            } else {
+                return { letter: "I", description: "1 finger" };
+            }
+        } else if (fingers === 2) {
+            if (aspectRatio < 0.8) {
+                return { letter: "V", description: "2 fingers (peace)" };
+            } else {
+                return { letter: "U", description: "2 fingers" };
+            }
+        } else if (fingers === 3) {
+            return { letter: "W", description: "3 fingers" };
+        } else if (fingers === 4) {
+            return { letter: "4", description: "4 fingers" };
+        } else if (fingers >= 5) {
+            if (aspectRatio > 1.3) {
+                return { letter: "B", description: "5 fingers (wide)" };
+            } else {
+                return { letter: "5", description: "5 fingers" };
+            }
         } else {
-            return { letter: "Hand", description: "Hand detected" };
+            // Fallback to shape-based
+            if (aspectRatio > 1.4) {
+                return { letter: "B", description: "Wide hand" };
+            } else if (size < 70) {
+                return { letter: "A", description: "Small fist" };
+            } else {
+                return { letter: "C", description: "Curved hand" };
+            }
         }
     }
     
@@ -147,16 +257,38 @@ document.addEventListener("DOMContentLoaded", () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             const handInfo = drawHand(skinPixels, ctx, canvas.width, canvas.height);
             
-            // Show result
+            // Show result with confidence
             if (handInfo) {
                 const gesture = classifyGesture(handInfo);
-                detectionResult.textContent = `${gesture.letter} - ${gesture.description}`;
-                detectionResult.style.color = "#17572a";
-                detectionResult.style.fontWeight = "bold";
+                const currentTime = Date.now();
+                
+                // Check if gesture changed or is stable
+                if (lastGesture !== gesture.letter) {
+                    lastGesture = gesture.letter;
+                    gestureStartTime = currentTime;
+                }
+                
+                const holdTime = (currentTime - gestureStartTime) / 1000;
+                const isStable = holdTime > 0.5;
+                
+                if (isStable) {
+                    detectionResult.textContent = `✓ ${gesture.letter} - ${gesture.description}`;
+                    detectionResult.style.color = "#17572a";
+                    detectionResult.style.fontWeight = "bold";
+                    detectionResult.style.backgroundColor = "rgba(122, 182, 140, 0.3)";
+                } else {
+                    detectionResult.textContent = `${gesture.letter} - ${gesture.description}`;
+                    detectionResult.style.color = "#666";
+                    detectionResult.style.fontWeight = "normal";
+                    detectionResult.style.backgroundColor = "rgba(122, 182, 140, 0.15)";
+                }
             } else {
+                lastGesture = null;
+                gestureStartTime = 0;
                 detectionResult.textContent = "No hand detected - show your palm";
                 detectionResult.style.color = "#999";
                 detectionResult.style.fontWeight = "normal";
+                detectionResult.style.backgroundColor = "rgba(122, 182, 140, 0.05)";
             }
             
         } catch (err) {
