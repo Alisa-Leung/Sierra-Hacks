@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         // Find the topmost points (potential fingertips)
         let topPoints = [];
-        const gridSize = 20;
+        const gridSize = 25;
         const grid = {};
         
         // Divide into grid and find highest point in each cell
@@ -60,9 +60,12 @@ document.addEventListener("DOMContentLoaded", () => {
         // Sort by y coordinate (top to bottom)
         topPoints.sort((a, b) => a.y - b.y);
         
-        // Keep only the top 30% of points
-        const topThreshold = topPoints[Math.floor(topPoints.length * 0.3)]?.y || 0;
-        topPoints = topPoints.filter(p => p.y <= topThreshold + 30);
+        // Keep only the top 20% of points and push them down slightly
+        const topThreshold = topPoints[Math.floor(topPoints.length * 0.2)]?.y || 0;
+        topPoints = topPoints.filter(p => p.y <= topThreshold + 40);
+        
+        // Adjust points downward to better match fingertips (move down by 15-20 pixels)
+        topPoints = topPoints.map(p => ({ x: p.x, y: p.y + 18 }));
         
         return topPoints;
     }
@@ -195,48 +198,39 @@ document.addEventListener("DOMContentLoaded", () => {
         
         const aspectRatio = handInfo.width / handInfo.height;
         const size = Math.sqrt(handInfo.width * handInfo.width + handInfo.height * handInfo.height);
-        const density = handInfo.pixelCount / (handInfo.width * handInfo.height);
         const fingers = handInfo.fingerCount;
         
-        console.log(`Fingers: ${fingers}, Size: ${size.toFixed(0)}, Aspect: ${aspectRatio.toFixed(2)}, Density: ${density.toFixed(2)}`);
+        console.log(`Fingers: ${fingers}, Size: ${size.toFixed(0)}, Aspect: ${aspectRatio.toFixed(2)}`);
         
-        // Classify based on finger count first
-        if (fingers === 0 && size < 80) {
-            return { letter: "A", description: "Fist (0 fingers)" };
-        } else if (fingers === 0 && size >= 80) {
-            return { letter: "S", description: "Closed hand (0 fingers)" };
-        } else if (fingers === 1) {
-            if (aspectRatio < 0.7) {
-                return { letter: "D", description: "1 finger pointing" };
+        // Classify based on finger count
+        if (fingers === 0) {
+            if (size < 100) {
+                return { letter: "A", description: "Closed fist" };
             } else {
-                return { letter: "I", description: "1 finger" };
+                return { letter: "S", description: "Closed hand" };
             }
+        } else if (fingers === 1) {
+            return { letter: "D", description: "One finger" };
         } else if (fingers === 2) {
-            if (aspectRatio < 0.8) {
-                return { letter: "V", description: "2 fingers (peace)" };
+            if (aspectRatio < 0.9) {
+                return { letter: "V", description: "Peace sign" };
             } else {
-                return { letter: "U", description: "2 fingers" };
+                return { letter: "U", description: "Two fingers" };
             }
         } else if (fingers === 3) {
-            return { letter: "W", description: "3 fingers" };
+            return { letter: "W", description: "Three fingers" };
         } else if (fingers === 4) {
-            return { letter: "4", description: "4 fingers" };
+            return { letter: "4", description: "Four fingers" };
         } else if (fingers >= 5) {
-            if (aspectRatio > 1.3) {
-                return { letter: "B", description: "5 fingers (wide)" };
-            } else {
-                return { letter: "5", description: "5 fingers" };
-            }
-        } else {
-            // Fallback to shape-based
             if (aspectRatio > 1.4) {
-                return { letter: "B", description: "Wide hand" };
-            } else if (size < 70) {
-                return { letter: "A", description: "Small fist" };
+                return { letter: "B", description: "Flat hand (wide)" };
             } else {
-                return { letter: "C", description: "Curved hand" };
+                return { letter: "5", description: "Open hand" };
             }
         }
+        
+        // Fallback
+        return { letter: "?", description: "Unknown gesture" };
     }
     
     // Main detection loop

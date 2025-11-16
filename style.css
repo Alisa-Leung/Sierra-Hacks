@@ -23,10 +23,16 @@
 }
 html{
     width: 300px;
+    max-width: 300px;
     height: 400px;
+    max-height: 400px;
     background-color: var(--off-white);
     text-align: center;
     padding: var(--small);
+    overflow-y: hidden;
+}
+body{
+    background-color: var(--off-white);
 }
 h1{
     font-family: var(--lexend);
@@ -161,24 +167,28 @@ input:checked + .slider:before{
     color: var(--text-green);
     font-weight: normal;
     margin: var(--small) 0;
-    margin-top: var(--medium); /* Add space after button */
+    margin-top: var(--small); /* Add space after button */
     min-height: 25px;
     font-size: 14px;
     padding: var(--small);
     background-color: rgba(122, 182, 140, 0.15);
     border-radius: var(--xsmall);
+    position: relative;
+    top: 0;
 }
 #outputCanvas {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 280px;
-    height: 210px;
+    width: 100%;
+    height: 100%;
     transform: scaleX(-1);
     pointer-events: none;
     border-radius: var(--small);
+    border: none;
     display: none;
+    z-index: 3;
+    outline: none;
 }
 #outputCanvas.active {
     display: block;
+    outline: none;
 }
