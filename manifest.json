@@ -1,6 +1,6 @@
 {
   "name": "Tactify",
-  "description": "",
+  "description": "An extension for creating a more accessible online space.",
   "version": "1.0",
   "manifest_version": 3,
   "action": {

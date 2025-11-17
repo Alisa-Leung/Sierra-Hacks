@@ -353,7 +353,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // single finger — try to detect index vs thumb by position: typically single finger near side -> thumb
             const tip = (fingertips && fingertips[0]) || null;
             if (tip && (tip.x < handInfo.centerX - handInfo.width * 0.15 || tip.x > handInfo.centerX + handInfo.width * 0.15)) {
-                return { letter: "D", description: "One finger (likely thumb)" };
+                if (modeDropdown.value == "csl"){
+                    return { letter: "一", description: "One finger (likely thumb)" };
+                } else{
+                    return { letter: "D", description: "One finger (likely thumb)" };
+                }
             }
             return { letter: "D", description: "One finger" };
         }
@@ -362,9 +366,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (modeDropdown.value == "csl"){
                 return { letter: "八", description: "Two fingers" };
             } else{
-                if (spread > 0.45 && handInfo.height > handInfo.width * 0.9) return { letter: "V", description: "Peace sign" };
-                return { letter: "U", description: "Two fingers" };
-            }        
+                if (spread > 0.45 && handInfo.height > handInfo.width * 0.9){
+                    return { letter: "V", description: "Peace sign" };
+                } else{
+                    return { letter: "U", description: "Two fingers" };
+                }
+            }
         }
         if (fc === 3) {
             return { letter: "W", description: "Three fingers" };
